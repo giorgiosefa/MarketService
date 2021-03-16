@@ -22,6 +22,16 @@ namespace MarketService.Api.Controllers
             this.marketsService = marketsService;
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("GetAll")]
+        [ProducesResponseType(typeof(MarketModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAll()
+        {
+            var markets = await this.marketsService.GetMarkets();
+            return Ok(markets);
+        }
+
         [HttpGet]
         [ProducesResponseType(typeof(MarketModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get()
@@ -43,8 +53,8 @@ namespace MarketService.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]      
         public async Task<IActionResult> Add([FromBody] MarketRequestModel request)
         {           
-            await this.marketsService.CreateMarket(request);
-            return Ok();
+            int Id = await this.marketsService.CreateMarket(request);
+            return Ok(Id);
         }
 
         [HttpPut("{id}")]

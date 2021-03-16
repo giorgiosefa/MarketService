@@ -43,8 +43,8 @@ namespace MarketService.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]      
         public async Task<IActionResult> Add([FromBody] CompanyRequestModel request)
         {           
-            await this.companyService.CreateCompany(request);
-            return Ok();
+            int Id = await this.companyService.CreateCompany(request);
+            return Ok(Id);
         }
 
         [HttpPut("{id}")]

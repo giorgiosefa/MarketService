@@ -14,7 +14,7 @@ namespace MarketService.Service
     {
         Task<List<MarketModel>> GetMarkets();
         Task<MarketModel> GetMarketById(int Id);
-        Task CreateMarket(MarketRequestModel marketRequest);
+        Task<int> CreateMarket(MarketRequestModel marketRequest);
         Task ChangeMarket(int id, MarketRequestModel marketRequest);
         Task DeleteMarket(int Id);        
     }
@@ -49,7 +49,7 @@ namespace MarketService.Service
             return marketRequest;
         }
 
-        public async Task CreateMarket(MarketRequestModel marketRequest)
+        public async Task<int> CreateMarket(MarketRequestModel marketRequest)
         {
             Market market = await this.unitOfWorkManager.Markets.GetSingleAsync(x => x.Name == marketRequest.Name);            
 
@@ -71,6 +71,8 @@ namespace MarketService.Service
                 await this.unitOfWorkManager.CompleteAsync();
 
                 this.unitOfWorkManager.CommitTransaction();
+
+                return newMarket.Id;
             }
             catch (Exception)
             {

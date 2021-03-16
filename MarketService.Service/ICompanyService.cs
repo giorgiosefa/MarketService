@@ -14,7 +14,7 @@ namespace MarketService.Service
     {
         Task<List<CompanyModel>> GetCompanies();
         Task<List<CompanyModel>> GetCompanyByMarketId(int MarketId);
-        Task CreateCompany(CompanyRequestModel companyRequest);
+        Task<int> CreateCompany(CompanyRequestModel companyRequest);
         Task ChangeCompany(int id, CompanyRequestModel companyRequest);
         Task DeleteCompany(int Id);        
     }
@@ -30,7 +30,7 @@ namespace MarketService.Service
 
         public async Task<List<CompanyModel>> GetCompanies()
         {
-            var company = await this.unitOfWorkManager.Companies.GetAllAsync();
+            var company = await this.unitOfWorkManager.Companies.GetAllAsync(includes: x => x.Markets);
 
             if (company == null) return null;
 
@@ -47,7 +47,7 @@ namespace MarketService.Service
             return company.Select(x => (CompanyModel)x).ToList();
         }
 
-        public async Task CreateCompany(CompanyRequestModel companyRequest)
+        public async Task<int> CreateCompany(CompanyRequestModel companyRequest)
         {
             Company comapny = await this.unitOfWorkManager.Companies.GetSingleAsync(x => x.Name == companyRequest.Name);
 
@@ -78,6 +78,8 @@ namespace MarketService.Service
                 await this.unitOfWorkManager.CompleteAsync();
 
                 this.unitOfWorkManager.CommitTransaction();
+
+                return newCompany.Id;
             }
             catch (Exception)
             {
@@ -89,11 +91,12 @@ namespace MarketService.Service
 
         public async Task ChangeCompany(int id, CompanyRequestModel companyRequest)
         {
-            Company company = await this.unitOfWorkManager.Companies.GetSingleAsync(x => x.Id == id && x.Markets.Id == companyRequest.MarketId);
+            Company company = await this.unitOfWorkManager.Companies.GetSingleAsync(x => x.Id == id);
 
             if (company == null)
                 throw new IsNotRegisteredException("company not found");
 
+            company.MarketId = companyRequest.MarketId;
             company.Price = companyRequest.Price;
             company.Name = companyRequest.Name;
             company.ChangeDate = DateTime.Now;

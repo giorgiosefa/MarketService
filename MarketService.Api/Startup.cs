@@ -6,6 +6,7 @@ using MarketService.Api.Infrastructure;
 using MarketService.Domain.Settings;
 using MarketService.Persistence.Database;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,21 @@ namespace MarketService.Api
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
+            //CORS
+            var corsBuilder = new CorsPolicyBuilder();
+            corsBuilder.AllowAnyHeader();
+            corsBuilder.AllowAnyMethod();
+            corsBuilder.AllowAnyOrigin(); // For everyone
+           
+            //corsBuilder.WithOrigins("http://localhost:8080"); 
+
+            corsBuilder.AllowCredentials();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("MyCorsPolicy", corsBuilder.Build());
+            });
+
             services.ConfigureLocalServices();
 
             string dbConnectionString = GetConnectionString();
@@ -52,12 +68,12 @@ namespace MarketService.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCustomExceptionMiddleware();            
+            app.UseCustomExceptionMiddleware();
 
-            //app.UseCors(x => x
-            //    .AllowAnyOrigin()
-            //    .AllowAnyMethod()
-            //    .AllowAnyHeader());
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
 
             app.UseAuthentication();
 
